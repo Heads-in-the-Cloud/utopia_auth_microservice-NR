@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -32,9 +31,12 @@ public class User {
     public User(String username, String password, UserRole userRole) {
         this.username = username;
         this.password = password;
-        UserRole role = Objects.requireNonNullElseGet(userRole, () -> new UserRole(3, "Traveler"));
-        this.userRole = role;
-        userRoles.add(role);
+        if (userRole != null) {
+            this.userRole = userRole;
+        } else {
+            this.userRole = new UserRole(3, "Traveler");
+        }
+        userRoles.add(this.userRole);
     }
 
     public Collection<UserRole> getUserRoles() {
