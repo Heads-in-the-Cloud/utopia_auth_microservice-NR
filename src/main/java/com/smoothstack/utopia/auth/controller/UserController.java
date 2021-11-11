@@ -5,14 +5,15 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.smoothstack.utopia.auth.entity.UserRole;
 import com.smoothstack.utopia.auth.entity.User;
+import com.smoothstack.utopia.auth.entity.UserRole;
 import com.smoothstack.utopia.auth.service.UserService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -35,6 +36,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class UserController {
     private final UserService userService;
 
+    @PreAuthorize("hasAuthority('Administrator')")
     @GetMapping(path = "/users")
     public ResponseEntity<List<User>> getUsers() {
         return ResponseEntity.ok().body(userService.getUsers());
@@ -46,12 +48,14 @@ public class UserController {
         return ResponseEntity.created(uri).body(userService.saveUser(user));
     }
 
+    @PreAuthorize("hasAuthority('Administrator')")
     @PostMapping(path = "/role/save")
     public ResponseEntity<UserRole> saveUser(@RequestBody UserRole userRole) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/role/save").toUriString());
         return ResponseEntity.created(uri).body(userService.saveRole(userRole));
     }
 
+    @PreAuthorize("hasAuthority('Administrator')")
     @PostMapping(path = "/role/addtouser")
     public ResponseEntity<?> addRoleToUser(@RequestBody RoleToUserForm form) {
         userService.addRoleToUser(form.getUsername(), form.getRoleName());
