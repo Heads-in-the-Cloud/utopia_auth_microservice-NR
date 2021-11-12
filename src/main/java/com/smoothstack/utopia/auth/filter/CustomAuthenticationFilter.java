@@ -3,6 +3,7 @@ package com.smoothstack.utopia.auth.filter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.smoothstack.utopia.auth.security.EnvConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,10 +26,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private final AuthenticationManager authenticationManager;
 
-    public CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
+    private final AuthenticationManager authenticationManager;
+    private final EnvConfig envConfig;
+
+    public CustomAuthenticationFilter(AuthenticationManager authenticationManager, EnvConfig envConfig) {
         this.authenticationManager = authenticationManager;
+        this.envConfig = envConfig;
     }
 
     @Override
@@ -45,7 +49,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication)
             throws IOException {
         User user = (User) authentication.getPrincipal();
-        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        Algorithm algorithm = Algorithm.HMAC256(envConfig.getSecret().getBytes());
         String accessToken =
                 JWT.create().withSubject(user.getUsername()).withExpiresAt(new Date(System.currentTimeMillis() + 240 * 60 * 1000)).withIssuer(request.getRequestURL().toString())
                         .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())).sign(algorithm);
