@@ -94,12 +94,6 @@ public class UserController {
             throw new RuntimeException("Refresh token is missing");
         }
     }
-
-    @GetMapping(path = "/health")
-    public ResponseEntity<String> health() {
-        return ResponseEntity.ok("OK");
-    }
-
 }
 
 @Getter
