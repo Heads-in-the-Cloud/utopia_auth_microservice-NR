@@ -5,6 +5,7 @@ import com.smoothstack.utopia.auth.filter.CustomAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,6 +38,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         customAuthenticationFilter.setFilterProcessesUrl("/api/auth/login");
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.authorizeRequests().antMatchers(HttpMethod.GET, "/api/users/health").permitAll();
         http.authorizeRequests().antMatchers("/api/auth/login/**", "/api/auth/token/refresh/**").permitAll();
         http.authorizeRequests().antMatchers(GET, "/api/auth/user/**").hasAnyAuthority("ROLE_TRAVELER");
         http.authorizeRequests().antMatchers(POST, "/api/auth/user/save/**").hasAnyAuthority("ROLE_ADMIN");

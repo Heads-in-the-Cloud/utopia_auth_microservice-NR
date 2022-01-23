@@ -95,6 +95,11 @@ public class UserController {
         }
     }
 
+    @GetMapping(path = "/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("OK");
+    }
+
 }
 
 @Getter
