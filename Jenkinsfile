@@ -40,7 +40,7 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     sh """
                        ${SONARQUBE_ID}/bin/sonar-scanner \
-                       -Dsonar.projectKey=nr-utopia-booking \
+                       -Dsonar.projectKey=nr-utopia-auth \
                        -Dsonar.sources=./src/main/java/com/smoothstack/utopia/auth \
                        -Dsonar.java.binaries=./target/classes/com/smoothstack/utopia/auth
                     """

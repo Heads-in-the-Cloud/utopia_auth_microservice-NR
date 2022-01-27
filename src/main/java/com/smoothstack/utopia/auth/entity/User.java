@@ -16,11 +16,17 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+    @Column(name = "given_name")
     private String givenName;
+    @Column(name = "family_name")
     private String familyName;
+    @Column(name = "email")
     private String email;
+    @Column(name = "phone")
     private String phone;
+    @Column(name = "username")
     private String username;
+    @Column(name = "email")
     private String password;
     @ManyToOne
     @JoinColumn(name = "role_id")
