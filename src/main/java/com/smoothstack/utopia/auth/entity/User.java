@@ -26,7 +26,7 @@ public class User {
     private String phone;
     @Column(name = "username")
     private String username;
-    @Column(name = "email")
+    @Column(name = "password")
     private String password;
     @ManyToOne
     @JoinColumn(name = "role_id")
