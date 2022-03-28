@@ -94,7 +94,6 @@ public class UserController {
             throw new RuntimeException("Refresh token is missing");
         }
     }
-
 }
 
 @Getter
