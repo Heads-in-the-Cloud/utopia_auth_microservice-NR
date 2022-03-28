@@ -37,8 +37,10 @@ pipeline {
             }
         }
         stage('Artifactory Login') {
+            steps {
                 echo 'logging into Artifactory $ART_REPO_ENDPOINT'
                 sh 'echo ${ART_REPO_LOGIN_PSW} | docker login ${ART_REPO_ENDPOINT} --username ${ART_REPO_LOGIN_USR} --password-stdin'
+            }
         }
         stage('Build JAR file') {
             steps {
