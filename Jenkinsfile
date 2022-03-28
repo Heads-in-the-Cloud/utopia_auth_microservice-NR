@@ -38,7 +38,7 @@ pipeline {
         }
         stage('Artifactory Login') {
             steps {
-                echo 'logging into Artifactory $ART_REPO_ENDPOINT'
+                echo 'logging into Artifactory'
                 sh 'echo ${ART_REPO_LOGIN_PSW} | docker login ${ART_REPO_ENDPOINT} --username ${ART_REPO_LOGIN_USR} --password-stdin'
             }
         }
@@ -84,11 +84,11 @@ pipeline {
         stage('Push To Artifactory') {
             steps {
                 echo 'Tagging images'
-                sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}/${API_REPO_NAME}:latest'
-                sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}/${API_REPO_NAME}:$COMMIT_HASH'
+                sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}:latest'
+                sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}:$COMMIT_HASH'
                 echo 'Pushing images'
-                sh 'docker push ${ARTIFACTORY_REPO}/${API_REPO_NAME}:latest'
-                sh 'docker push ${ARTIFACTORY_REPO}/${API_REPO_NAME}:$COMMIT_HASH'
+                sh 'docker push ${ARTIFACTORY_REPO}:latest'
+                sh 'docker push ${ARTIFACTORY_REPO}:$COMMIT_HASH'
             }
         }
         stage('Cleanup') {
@@ -97,8 +97,8 @@ pipeline {
                 sh 'docker rmi ${API_REPO_NAME}:latest'
                 sh 'docker rmi ${ECR_REPO}/${API_REPO_NAME}:latest'
                 sh 'docker rmi ${ECR_REPO}/${API_REPO_NAME}:$COMMIT_HASH'
-                sh 'docker rmi ${ARTIFACTORY_REPO}/${API_REPO_NAME}:latest'
-                sh 'docker rmi ${ARTIFACTORY_REPO}/${API_REPO_NAME}:$COMMIT_HASH'
+                sh 'docker rmi ${ARTIFACTORY_REPO}:latest'
+                sh 'docker rmi ${ARTIFACTORY_REPO}:$COMMIT_HASH'
                 sh 'unset AWS_PROFILE'
             }
         }
