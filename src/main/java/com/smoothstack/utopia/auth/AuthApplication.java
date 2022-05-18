@@ -17,13 +17,4 @@ public class AuthApplication {
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    //    @Bean
-    //    CommandLineRunner run(UserService userService) {
-    //        return args -> {
-    //            userService.saveUser(new User("admin", "12345", null));
-    //
-    //            userService.addRoleToUser("admin", "ROLE_ADMIN");
-    //        };
-    //    }
 }
