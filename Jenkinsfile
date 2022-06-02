@@ -7,6 +7,8 @@ pipeline {
         AWS_REGION_ID = "${sh(script:'aws configure get region', returnStdout: true).trim()}"
         AWS_ACCOUNT_ID = "${sh(script:'aws sts get-caller-identity --query "Account" --output text', returnStdout: true).trim()}"
         UTOPIA_MICROSERVICE_PORT=credentials('nr_utopia_microservice_port')
+        CLUSTER=credentials('nr_utopia_cluster')
+        NAMESPACE=credentials('nr_utopia_namespace')
         AWS_PROFILE=credentials('nr_aws_profile')
         SONARQUBE_ID = tool name: 'SonarQubeScanner-4.6.2'
 
@@ -68,24 +70,64 @@ pipeline {
             steps {
                 echo 'Tagging images'
                 sh 'docker tag ${API_REPO_NAME}:latest ${ECR_REPO}/${API_REPO_NAME}:latest'
-                sh 'docker tag ${API_REPO_NAME}:latest ${ECR_REPO}/${API_REPO_NAME}:$COMMIT_HASH'
+                sh 'docker tag ${API_REPO_NAME}:latest ${ECR_REPO}/${API_REPO_NAME}:${COMMIT_HASH}'
                 echo 'Pushing images'
                 sh 'docker push ${ECR_REPO}/${API_REPO_NAME}:latest'
-                sh 'docker push ${ECR_REPO}/${API_REPO_NAME}:$COMMIT_HASH'
+                sh 'docker push ${ECR_REPO}/${API_REPO_NAME}:${COMMIT_HASH}'
             }
         }
         stage('Push To Artifactory') {
             steps {
                 echo 'Tagging images'
                 sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}:latest'
-                sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}:$COMMIT_HASH'
+                sh 'docker tag ${API_REPO_NAME}:latest ${ARTIFACTORY_REPO}:${COMMIT_HASH}'
                 echo 'Pushing images'
                 sh 'docker push ${ARTIFACTORY_REPO}:latest'
-                sh 'docker push ${ARTIFACTORY_REPO}:$COMMIT_HASH'
+                sh 'docker push ${ARTIFACTORY_REPO}:${COMMIT_HASH}'
+            }
+        }
+        stage('Get kubeconfig') {
+            steps {
+                echo 'Getting kubeconfig'
+                sh 'export KUBECONFIG=kubeconfig'
+                sh 'aws eks update-kubeconfig --region ${AWS_REGION_ID} --name ${CLUSTER}'
+            }
+        }
+        stage('Update Blue') {
+            when {
+                branch 'blue'
+            }
+            steps {
+                sh 'kubectl set image deployment auth-blue auth=${ECR_REPO}/${API_REPO_NAME}:${COMMIT_HASH}'
+            }
+        }
+        stage('Redirect to Blue') {
+            when {
+                branch 'blue'
+            }
+            steps {
+                sh 'kubectl patch service auth -p '{"spec":{"selector":{"version": "blue"}}}''
+            }
+        }
+        stage('Update Green') {
+            when {
+                branch 'green'
+            }
+            steps {
+                sh 'kubectl set image deployment auth-blue auth=${ECR_REPO}/${API_REPO_NAME}:${COMMIT_HASH} -n ${NAMESPACE}'
+            }
+        }
+        stage('Redirect to Green') {
+            when {
+                branch 'green'
+            }
+            steps {
+                sh 'kubectl patch service auth -p '{"spec":{"selector":{"version": "green"}}}''
             }
         }
         stage('Cleanup') {
             steps {
+                sh 'rm kubeconfig'
                 echo 'Removing images'
                 sh 'docker rmi ${API_REPO_NAME}:latest'
                 sh 'docker rmi ${ECR_REPO}/${API_REPO_NAME}:latest'
@@ -93,6 +135,7 @@ pipeline {
                 sh 'docker rmi ${ARTIFACTORY_REPO}:latest'
                 sh 'docker rmi ${ARTIFACTORY_REPO}:$COMMIT_HASH'
                 sh 'unset AWS_PROFILE'
+                sh 'unset KUBECONFIG'
             }
         }
     }
