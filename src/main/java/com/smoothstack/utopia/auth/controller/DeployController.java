@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DeployController {
 
-    @GetMapping(path = "/deployment")
+    @GetMapping(path = "/api/auth/deployment")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Blue");
     }
